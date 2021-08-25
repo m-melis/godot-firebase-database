@@ -1,41 +1,15 @@
 package ru.mobilap.firebasedatabase;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.Context;
-import android.os.Bundle;
-import android.os.Build;
-import android.os.Environment;
-import android.os.StatFs;
+import android.provider.ContactsContract;
 import android.util.Log;
-import android.util.DisplayMetrics;
-import android.telephony.TelephonyManager;
-import android.view.WindowManager;
-import android.view.Display;
 import android.view.View;
-import java.math.BigDecimal;
-import java.io.IOException;
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Currency;
+
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.Locale;
-import java.util.Date;
 import java.util.Set;
 import java.util.HashSet;
-import java.lang.Exception;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -50,11 +24,11 @@ import org.godotengine.godot.plugin.SignalInfo;
 
 public class FirebaseDatabase extends GodotPlugin {
 
-    final private SignalInfo getValueSignal = new SignalInfo("get_value");
-    final private SignalInfo childAddedSignal = new SignalInfo("child_added");
-    final private SignalInfo childChangedSignal = new SignalInfo("child_changed");
-    final private SignalInfo childMovedSignal = new SignalInfo("child_moved");
-    final private SignalInfo childRemovedSignal = new SignalInfo("child_removed");
+    final private SignalInfo getValueSignal = new SignalInfo("get_value", String.class);
+    final private SignalInfo childAddedSignal = new SignalInfo("child_added", String.class);
+    final private SignalInfo childChangedSignal = new SignalInfo("child_changed", String.class);
+    final private SignalInfo childMovedSignal = new SignalInfo("child_moved", String.class);
+    final private SignalInfo childRemovedSignal = new SignalInfo("child_removed", String.class);
 
 
     private Godot activity = null;
@@ -113,27 +87,19 @@ public class FirebaseDatabase extends GodotPlugin {
                     }
                     @Override
                     public void onChildAdded(DataSnapshot snapshot, String previousChildName) {
-                        Object value = snapshot.getValue();
-                        String key = snapshot.getKey();
-                        emitSignal(childAddedSignal.getName(), new Object[] {key, value});
+                        emitSignal(childAddedSignal.getName(), dataSnapShotToString(snapshot));
                     }
                     @Override
                     public void onChildChanged(DataSnapshot snapshot, String previousChildName) {
-                        Object value = snapshot.getValue();
-                        String key = snapshot.getKey();
-                        emitSignal(childChangedSignal.getName(), new Object[] {key, value});
+                        emitSignal(childChangedSignal.getName(), dataSnapShotToString(snapshot));
                     }
                     @Override
                     public void onChildMoved(DataSnapshot snapshot, String previousChildName) {
-                        Object value = snapshot.getValue();
-                        String key = snapshot.getKey();
-                        emitSignal(childMovedSignal.getName(), new Object[] {key, value});
+                        emitSignal(childMovedSignal.getName(), dataSnapShotToString(snapshot));
                     }
                     @Override
                     public void onChildRemoved(DataSnapshot snapshot) {
-                        Object value = snapshot.getValue();
-                        String key = snapshot.getKey();
-                        emitSignal(childRemovedSignal.getName(), new Object[] {key, value});
+                        emitSignal(childRemovedSignal.getName(), dataSnapShotToString(snapshot));
                     }
                 };
         }
@@ -148,7 +114,11 @@ public class FirebaseDatabase extends GodotPlugin {
         return ref;
     }
 
-    public void set_value(final String[] path, final Object value) {
+    private String dataSnapShotToString(DataSnapshot dataSnapshot){
+        return String.valueOf(dataSnapshot.getValue()).replaceAll("=",":");
+    }
+
+    public void set_value(final String[] path, final Dictionary value) {
         DatabaseReference ref = getReferenceForPath(path);
         ref.setValue(value);
     }
@@ -177,9 +147,7 @@ public class FirebaseDatabase extends GodotPlugin {
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    Object value = dataSnapshot.getValue();
-                    String key = dataSnapshot.getKey();
-                    emitSignal(getValueSignal.getName(), new Object[] {key, value});
+                    emitSignal(getValueSignal.getName(), dataSnapShotToString(dataSnapshot));
                 }
 
                 @Override
