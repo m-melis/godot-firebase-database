@@ -24,11 +24,16 @@ import org.godotengine.godot.plugin.SignalInfo;
 
 public class FirebaseDatabase extends GodotPlugin {
 
-    final private SignalInfo getValueSignal = new SignalInfo("get_value", String.class);
-    final private SignalInfo childAddedSignal = new SignalInfo("child_added", String.class);
-    final private SignalInfo childChangedSignal = new SignalInfo("child_changed", String.class);
-    final private SignalInfo childMovedSignal = new SignalInfo("child_moved", String.class);
-    final private SignalInfo childRemovedSignal = new SignalInfo("child_removed", String.class);
+    final private SignalInfo getValueSignal = new SignalInfo(
+            "get_value", String.class, String.class);
+    final private SignalInfo childAddedSignal = new SignalInfo(
+            "child_added", String.class, String.class);
+    final private SignalInfo childChangedSignal = new SignalInfo(
+            "child_changed", String.class, String.class);
+    final private SignalInfo childMovedSignal = new SignalInfo(
+            "child_moved", String.class, String.class);
+    final private SignalInfo childRemovedSignal = new SignalInfo(
+            "child_removed", String.class, String.class);
 
 
     private Godot activity = null;
@@ -64,7 +69,13 @@ public class FirebaseDatabase extends GodotPlugin {
 
     @Override
     public Set<SignalInfo> getPluginSignals() {
-        return new HashSet<SignalInfo>(Arrays.asList(getValueSignal, childAddedSignal, childChangedSignal, childMovedSignal, childRemovedSignal));
+        return new HashSet<SignalInfo>(
+                Arrays.asList(
+                        getValueSignal,
+                        childAddedSignal,
+                        childChangedSignal,
+                        childMovedSignal,
+                        childRemovedSignal));
     }
 
     @Override
@@ -84,22 +95,31 @@ public class FirebaseDatabase extends GodotPlugin {
             rootChildListener = new ChildEventListener() {
                     @Override
                     public void onCancelled(DatabaseError error) {
+                        Log.w("godot", "FBDB set_db_root:onCancelled", error.toException());
                     }
                     @Override
                     public void onChildAdded(DataSnapshot snapshot, String previousChildName) {
-                        emitSignal(childAddedSignal.getName(), dataSnapShotToString(snapshot));
+                        Log.d("godot", "FBDB set_db_root:onChildAdded - " + snapshot.toString());
+                        emitSignal(childAddedSignal.getName(),
+                                (Object[]) dataSnapShotToString(snapshot));
                     }
                     @Override
                     public void onChildChanged(DataSnapshot snapshot, String previousChildName) {
-                        emitSignal(childChangedSignal.getName(), dataSnapShotToString(snapshot));
+                        Log.d("godot", "FBDB set_db_root:onChildChanged - " + snapshot.toString());
+                        emitSignal(childChangedSignal.getName(),
+                                (Object[]) dataSnapShotToString(snapshot));
                     }
                     @Override
                     public void onChildMoved(DataSnapshot snapshot, String previousChildName) {
-                        emitSignal(childMovedSignal.getName(), dataSnapShotToString(snapshot));
+                        Log.d("godot", "FBDB set_db_root:onChildMoved - " + snapshot.toString());
+                        emitSignal(childMovedSignal.getName(),
+                                (Object[]) dataSnapShotToString(snapshot));
                     }
                     @Override
                     public void onChildRemoved(DataSnapshot snapshot) {
-                        emitSignal(childRemovedSignal.getName(), dataSnapShotToString(snapshot));
+                        Log.d("godot", "FBDB set_db_root:onChildRemoved - " + snapshot.toString());
+                        emitSignal(childRemovedSignal.getName(),
+                                (Object[]) dataSnapShotToString(snapshot));
                     }
                 };
         }
@@ -111,11 +131,15 @@ public class FirebaseDatabase extends GodotPlugin {
         for (String p : path) {
             ref = ref.child(p);
         }
+        Log.d("godot", "FBDB getReferenceForPath - " + ref.toString());
         return ref;
     }
 
-    private String dataSnapShotToString(DataSnapshot dataSnapshot){
-        return String.valueOf(dataSnapshot.getValue()).replaceAll("=",":");
+    private String[] dataSnapShotToString(DataSnapshot dataSnapshot){
+        return new String[] {
+                String.valueOf(dataSnapshot.getKey()),
+                String.valueOf(dataSnapshot.getValue()).replaceAll("=",":")
+        };
     }
 
     public void set_value(final String[] path, final Dictionary value) {
@@ -143,11 +167,14 @@ public class FirebaseDatabase extends GodotPlugin {
     }
 
     public void get_value(final String[] path) {
+        Log.d("godot", "FBDB get_value - " + Arrays.toString(path));
         DatabaseReference ref = getReferenceForPath(path);
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    emitSignal(getValueSignal.getName(), dataSnapShotToString(dataSnapshot));
+                    Log.d("godot", "FBDB get_value:onDataChange - " + dataSnapshot.toString());
+                    emitSignal(getValueSignal.getName(),
+                            (Object[]) dataSnapShotToString(dataSnapshot));
                 }
 
                 @Override
