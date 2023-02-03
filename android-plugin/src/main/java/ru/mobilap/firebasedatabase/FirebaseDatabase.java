@@ -59,12 +59,17 @@ public class FirebaseDatabase extends GodotPlugin {
     @Override
     public List<String> getPluginMethods() {
         return Arrays.asList(
-                             "set_db_root",
-                             "set_value",
-                             "push_child",
-                             "update_children",
-                             "remove_value",
-                             "get_value");
+                "set_db_root",
+                "set_value",
+                "set_value_int",
+                "set_value_float",
+                "set_value_boolean",
+                "set_value_string",
+                "push_child",
+                "update_children",
+                "remove_value",
+                "get_value"
+        );
     }
 
     @Override
@@ -143,6 +148,36 @@ public class FirebaseDatabase extends GodotPlugin {
     }
 
     public void set_value(final String[] path, final Dictionary value) {
+        Log.d("godot", "FBDB set_value - " +
+                Arrays.toString(path) + ": " + String.valueOf(value));
+        DatabaseReference ref = getReferenceForPath(path);
+        ref.setValue(value);
+    }
+
+    public void set_value_int(final String[] path, final int value) {
+        Log.d("godot", "FBDB set_value - " +
+                Arrays.toString(path) + ": " + String.valueOf(value));
+        DatabaseReference ref = getReferenceForPath(path);
+        ref.setValue(value);
+    }
+
+    public void set_value_float(final String[] path, final float value) {
+        Log.d("godot", "FBDB set_value - " +
+                Arrays.toString(path) + ": " + String.valueOf(value));
+        DatabaseReference ref = getReferenceForPath(path);
+        ref.setValue(value);
+    }
+
+    public void set_value_boolean(final String[] path, final boolean value) {
+        Log.d("godot", "FBDB set_value - " +
+                Arrays.toString(path) + ": " + String.valueOf(value));
+        DatabaseReference ref = getReferenceForPath(path);
+        ref.setValue(value);
+    }
+
+    public void set_value_string(final String[] path, final String value) {
+        Log.d("godot", "FBDB set_value - " +
+                Arrays.toString(path) + ": " + String.valueOf(value));
         DatabaseReference ref = getReferenceForPath(path);
         ref.setValue(value);
     }
